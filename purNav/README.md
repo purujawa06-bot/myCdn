@@ -230,13 +230,3 @@ Pur.js mendukung semua browser modern:
 ## Lisensi
 
 MIT License - bebas digunakan untuk proyek personal dan komersial.
-```
-
-## Keunggulan Pur.js:
-
-1. **SPA**: Router built-in dengan history management
-2. **Modular**: Sistem komponen yang reusable
-3. **Virtual DOM**: Rendering efisien dengan diffing algorithm
-4. **Responsive**: Grid system dan utility classes untuk semua device
-
-Framework ini siap digunakan langsung via CDN dengan performa optimal dan ukuran file yang ringan!
