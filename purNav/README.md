@@ -14,7 +14,7 @@ pur.js adalah modul JavaScript ringan untuk membuat website HTML lebih modern de
 Tambahkan pur.js ke proyek Anda:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/username/pur.js/pur.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/purujawa06-bot/myCdn/purNav/pur.js"></script>
 ```
 
 Atau gunakan sebagai modul:
