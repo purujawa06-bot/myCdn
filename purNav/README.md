@@ -1,280 +1,242 @@
-# Pur - Lightweight Client-Side Router
 
-Pur adalah library JavaScript sederhana untuk menangani routing di sisi klien (client-side routing) dengan mudah dan ringan.
+# Pur.js - Modern Web Framework
 
-## Fitur
+Pur.js adalah framework JavaScript modern untuk membangun website dengan fitur Single Page Application (SPA), sistem modular, Virtual DOM, dan desain responsive.
 
-- ✅ Routing sederhana dengan handler functions
-- ✅ Navigation dengan atribut `purNav`
-- ✅ Auto-active state untuk link aktif
-- ✅ Support Shadow DOM
-- ✅ History API integration
-- ✅ Dynamic HTML loading
-- ✅ Custom Components
-- ✅ Event handling untuk route changes
+## Fitur Utama
+
+- 🚀 **SPA (Single Page Application)** - Navigasi tanpa reload halaman
+- 🧩 **Modular** - Sistem komponen yang terstruktur
+- ⚡ **Virtual DOM** - Rendering yang cepat dan efisien
+- 📱 **Responsive** - Desain yang adaptif untuk semua perangkat
 
 ## Instalasi
 
-Tambahkan script berikut ke dalam HTML Anda:
+### Via CDN (Recommended)
+
+Tambahkan script berikut di HTML Anda:
 
 ```html
-<script type="module">
-    import pur from 'https://cdn.jsdelivr.net/gh/purujawa06-bot/myCdn/purNav/pur.js';
-</script>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Pur.js App</title>
+</head>
+<body>
+    <div id="app"></div>
+
+    <!-- Load Pur.js from CDN -->
+    <script src="https://cdn.jsdelivr.net/gh/purujawa06-bot/myCdn/purNav/pur.js"></script>
+    
+    <script>
+        // Your app code here
+        const app = new Pur({
+            root: '#app',
+            state: {
+                message: 'Hello Pur.js!'
+            }
+        });
+
+        app.component('home', {
+            render() {
+                return PurComponents.Container({}, [
+                    PurComponents.Row({}, [
+                        PurComponents.Col({ size: '6' }, [
+                            this.createElement('h1', {}, ['Welcome to Pur.js']),
+                            this.createElement('p', {}, [this.state.message]),
+                            this.createElement('button', {
+                                onclick: () => {
+                                    this.state.message = 'Message updated!';
+                                }
+                            }, ['Click Me'])
+                        ])
+                    ])
+                ]);
+            }
+        });
+
+        app.route('/', app.components.get('home'));
+    </script>
+</body>
+</html>
 ```
 
-## Penggunaan Dasar
+### Via NPM (Coming Soon)
 
-### 1. Inisialisasi dan Setup Routes
+```bash
+npm install pur.js
+```
+
+## Penggunaan Cepat
+
+### 1. Inisialisasi Aplikasi
 
 ```javascript
-// Set default route
-pur.setDefaultRoute('/');
-
-// Tambahkan routes
-pur.addRoute('/', () => {
-    document.getElementById('content').innerHTML = '<h1>Home Page</h1>';
-});
-
-pur.addRoute('/about', () => {
-    document.getElementById('content').innerHTML = '<h1>About Us</h1>';
-});
-
-pur.addRoute('/contact', () => {
-    document.getElementById('content').innerHTML = '<h1>Contact Page</h1>';
+const app = new Pur({
+    root: '#app',
+    state: {
+        count: 0,
+        user: { name: 'John' }
+    }
 });
 ```
 
-### 2. Navigation Links
+### 2. Membuat Komponen
 
-Gunakan atribut `purNav` untuk membuat link navigasi:
-
-```html
-<nav>
-    <a href="/" purNav="/">Home</a>
-    <a href="/about" purNav="/about">About</a>
-    <a href="/contact" purNav="/contact">Contact</a>
-</nav>
-
-<div id="content"></div>
+```javascript
+app.component('counter', {
+    render() {
+        return this.createElement('div', { class: 'counter' }, [
+            this.createElement('h2', {}, ['Counter: ' + this.state.count]),
+            this.createElement('button', {
+                onclick: () => { this.state.count++; }
+            }, ['Increment'])
+        ]);
+    }
+});
 ```
 
-### 3. Styling Link Aktif
+### 3. Setup Routing
 
-Link yang aktif akan mendapatkan class `pur-active`:
+```javascript
+app.route('/', app.components.get('counter'));
+app.route('/about', {
+    render() {
+        return this.createElement('div', {}, [
+            this.createElement('h1', {}, ['About Page']),
+            this.createElement('a', { 
+                href: '/', 
+                'data-link': true 
+            }, ['Back to Home'])
+        ]);
+    }
+});
+```
 
-```css
-[purNav].pur-active {
-    font-weight: bold;
-    color: #007bff;
-}
+### 4. Komponen Bawaan
+
+```javascript
+// Responsive container
+PurComponents.Container({ class: 'my-container' }, [
+    // children
+]);
+
+// Grid system
+PurComponents.Row({}, [
+    PurComponents.Col({ size: '6' }, ['Column 1']),
+    PurComponents.Col({ size: '6' }, ['Column 2'])
+]);
+
+// Navigation
+PurComponents.Nav({}, [
+    this.createElement('a', { href: '/', 'data-link': true }, ['Home']),
+    this.createElement('a', { href: '/about', 'data-link': true }, ['About'])
+]);
 ```
 
 ## API Reference
 
+### Pur Constructor
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| root | string | CSS selector untuk root element |
+| state | object | State global aplikasi |
+
 ### Methods
 
-#### `addRoute(path, handler)`
-Menambahkan route baru.
-
-```javascript
-pur.addRoute('/users', () => {
-    // Handler untuk route /users
-    console.log('Users page loaded');
-});
-```
-
-#### `setDefaultRoute(path)`
-Mengatur route default.
-
-```javascript
-pur.setDefaultRoute('/home');
-```
-
-#### `navigate(url)`
-Navigasi secara programmatic.
-
-```javascript
-pur.navigate('/about');
-```
-
-#### `loadHTML(url, container)`
-Memuat HTML dari URL eksternal.
-
-```javascript
-pur.loadHTML('/partials/header.html', document.getElementById('header'))
-    .then(() => console.log('HTML loaded'))
-    .catch(err => console.error('Failed to load HTML:', err));
-```
-
-#### `createComponent(name, templateString, styles)`
-Membuat custom component.
-
-```javascript
-pur.createComponent('my-header', 
-    '<header><h1>My App</h1><slot></slot></header>',
-    'h1 { color: blue; }'
-);
-```
-
-### Events
-
-#### `purRouteChange`
-Event yang di-trigger ketika route berubah.
-
-```javascript
-window.addEventListener('purRouteChange', (event) => {
-    console.log('Route changed to:', event.detail.route);
-    console.log('Full URL:', event.detail.url);
-});
-```
+- `component(name, definition)` - Mendaftarkan komponen
+- `route(path, component)` - Mendefinisikan route
+- `navigate(path)` - Navigasi ke route tertentu
+- `createElement(tag, props, children)` - Membuat virtual node
 
 ## Contoh Lengkap
 
-### HTML Structure
-
 ```html
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Pur App</title>
-    <style>
-        nav a { margin: 0 10px; text-decoration: none; }
-        nav a.pur-active { font-weight: bold; color: #007bff; }
-        #content { padding: 20px; border: 1px solid #ddd; margin-top: 20px; }
-    </style>
+    <title>Pur.js Example</title>
 </head>
 <body>
-    <nav>
-        <a href="/" purNav="/">Home</a>
-        <a href="/about" purNav="/about">About</a>
-        <a href="/contact" purNav="/contact">Contact</a>
-        <a href="/products" purNav="/products">Products</a>
-    </nav>
+    <div id="app"></div>
 
-    <div id="content">Loading...</div>
+    <script src="https://cdn.jsdelivr.net/gh/purujawa06-bot/myCdn/purNav/pur.js"></script>
+    
+    <script>
+        const app = new Pur({
+            root: '#app',
+            state: {
+                title: 'My App',
+                posts: []
+            }
+        });
 
-    <script type="module">
-        import pur from 'https://cdn.jsdelivr.net/gh/purujawa06-bot/myCdn/purNav/pur.js';
+        // Header component
+        app.component('header', {
+            render() {
+                return PurComponents.Nav({}, [
+                    this.createElement('a', { 
+                        href: '/', 
+                        'data-link': true 
+                    }, ['Home']),
+                    this.createElement('a', { 
+                        href: '/posts', 
+                        'data-link': true 
+                    }, ['Posts'])
+                ]);
+            }
+        });
+
+        // Home page
+        app.component('home', {
+            render() {
+                return this.createElement('div', {}, [
+                    app.components.get('header').render.call(this),
+                    PurComponents.Container({}, [
+                        this.createElement('h1', {}, [this.state.title]),
+                        this.createElement('p', {}, ['Welcome to our Pur.js application!'])
+                    ])
+                ]);
+            }
+        });
 
         // Setup routes
-        pur.setDefaultRoute('/');
-        
-        pur.addRoute('/', () => {
-            document.getElementById('content').innerHTML = `
-                <h1>Welcome Home</h1>
-                <p>This is the home page content.</p>
-            `;
-        });
-
-        pur.addRoute('/about', () => {
-            document.getElementById('content').innerHTML = `
-                <h1>About Us</h1>
-                <p>Learn more about our company.</p>
-            `;
-        });
-
-        pur.addRoute('/contact', () => {
-            document.getElementById('content').innerHTML = `
-                <h1>Contact Us</h1>
-                <p>Get in touch with our team.</p>
-            `;
-        });
-
-        pur.addRoute('/products', () => {
-            // Load HTML dari file eksternal
-            pur.loadHTML('/partials/products.html', document.getElementById('content'))
-                .catch(() => {
-                    document.getElementById('content').innerHTML = '<p>Products page - content failed to load</p>';
-                });
-        });
-
-        // Listen untuk route changes
-        window.addEventListener('purRouteChange', (event) => {
-            console.log('Navigated to:', event.detail.route);
+        app.route('/', app.components.get('home'));
+        app.route('/posts', {
+            render() {
+                return this.createElement('div', {}, [
+                    app.components.get('header').render.call(this),
+                    PurComponents.Container({}, [
+                        this.createElement('h1', {}, ['Blog Posts']),
+                        this.createElement('p', {}, ['Posts will be displayed here...'])
+                    ])
+                ]);
+            }
         });
     </script>
 </body>
 </html>
 ```
 
-### Contoh dengan Custom Components
-
-```javascript
-// Buat custom component
-pur.createComponent('app-header', 
-    `
-    <header>
-        <h1>My Application</h1>
-        <nav>
-            <a href="/" purNav="/">Home</a>
-            <a href="/settings" purNav="/settings">Settings</a>
-        </nav>
-    </header>
-    `,
-    `
-    header { 
-        background: #333; 
-        color: white; 
-        padding: 1rem; 
-    }
-    header h1 { margin: 0; }
-    header a { color: white; margin: 0 10px; }
-    header a.pur-active { color: yellow; }
-    `
-);
-
-// Gunakan component di HTML
-// <app-header></app-header>
-```
-
-## Query Parameters
-
-Pur mendukung query parameters. Handler bisa mengaksesnya melalui:
-
-```javascript
-pur.addRoute('/search', () => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const query = searchParams.get('q');
-    
-    document.getElementById('content').innerHTML = `
-        <h1>Search Results</h1>
-        <p>Searching for: ${query || 'nothing'}</p>
-    `;
-});
-
-// Navigasi ke: /search?q=javascript
-```
-
-## Error Handling
-
-```javascript
-// Handle route not found
-pur.setDefaultRoute('/404');
-
-pur.addRoute('/404', () => {
-    document.getElementById('content').innerHTML = `
-        <h1>404 - Page Not Found</h1>
-        <p>The page you're looking for doesn't exist.</p>
-    `;
-});
-```
-
 ## Browser Support
 
-Pur bekerja di semua browser modern yang mendukung:
-- ES6 Classes
-- Map
-- Custom Elements
-- Shadow DOM
-- History API
+Pur.js mendukung semua browser modern:
+- Chrome 60+
+- Firefox 55+
+- Safari 12+
+- Edge 79+
 
-## License
+## Lisensi
 
 MIT License - bebas digunakan untuk proyek personal dan komersial.
+```
 
----
+## Keunggulan Pur.js:
 
-Dibuat dengan ❤️ untuk pengembangan web yang sederhana dan efisien.
+1. **SPA**: Router built-in dengan history management
+2. **Modular**: Sistem komponen yang reusable
+3. **Virtual DOM**: Rendering efisien dengan diffing algorithm
+4. **Responsive**: Grid system dan utility classes untuk semua device
+
+Framework ini siap digunakan langsung via CDN dengan performa optimal dan ukuran file yang ringan!
