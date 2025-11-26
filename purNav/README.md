@@ -1,49 +1,37 @@
-# pur.js - Modern HTML Enhancement & SPA Navigation
+# Pur - Lightweight Client-Side Router
 
-pur.js adalah modul JavaScript ringan untuk membuat website HTML lebih modern dengan navigasi SPA (Single Page Application).
+Pur adalah library JavaScript sederhana untuk menangani routing di sisi klien (client-side routing) dengan mudah dan ringan.
 
 ## Fitur
 
-- **SPA Navigation**: Navigasi antar halaman tanpa reload
-- **Modern HTML Components**: Membuat komponen web modern
-- **Lightweight**: Ringan dan cepat
-- **Easy to Use**: Sintaks yang sederhana dan intuitif
+- ✅ Routing sederhana dengan handler functions
+- ✅ Navigation dengan atribut `purNav`
+- ✅ Auto-active state untuk link aktif
+- ✅ Support Shadow DOM
+- ✅ History API integration
+- ✅ Dynamic HTML loading
+- ✅ Custom Components
+- ✅ Event handling untuk route changes
 
 ## Instalasi
 
-Tambahkan pur.js ke proyek Anda:
+Tambahkan script berikut ke dalam HTML Anda:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/purujawa06-bot/myCdn/purNav/pur.js"></script>
+<script type="module">
+    import pur from 'https://cdn.jsdelivr.net/gh/purujawa06-bot/myCdn/purNav/pur.js';
+</script>
 ```
 
-Atau gunakan sebagai modul:
+## Penggunaan Dasar
+
+### 1. Inisialisasi dan Setup Routes
 
 ```javascript
-import pur from './pur.js';
-```
+// Set default route
+pur.setDefaultRoute('/');
 
-## Penggunaan
-
-### 1. Navigasi SPA
-
-Gunakan atribut `purNav` untuk membuat elemen navigasi SPA:
-
-```html
-<!-- Navigasi sederhana -->
-<a purNav="/home">Home</a>
-<a purNav="/about">About</a>
-<a purNav="/contact">Contact</a>
-
-<!-- Bisa digunakan di elemen apapun -->
-<button purNav="/dashboard">Dashboard</button>
-<div purNav="/profile" class="nav-item">Profile</div>
-```
-
-### 2. Mendefinisikan Rute
-
-```javascript
-// Tambahkan rute
+// Tambahkan routes
 pur.addRoute('/', () => {
     document.getElementById('content').innerHTML = '<h1>Home Page</h1>';
 });
@@ -55,136 +43,238 @@ pur.addRoute('/about', () => {
 pur.addRoute('/contact', () => {
     document.getElementById('content').innerHTML = '<h1>Contact Page</h1>';
 });
-
-// Atau dalam bentuk chaining
-pur.addRoute('/', homeHandler)
-   .addRoute('/about', aboutHandler)
-   .addRoute('/contact', contactHandler)
-   .setDefaultRoute('/');
 ```
 
-### 3. Memuat Konten HTML Eksternal
+### 2. Navigation Links
 
-```javascript
-pur.addRoute('/products', () => {
-    pur.loadHTML('/partials/products.html', document.getElementById('content'));
-});
+Gunakan atribut `purNav` untuk membuat link navigasi:
+
+```html
+<nav>
+    <a href="/" purNav="/">Home</a>
+    <a href="/about" purNav="/about">About</a>
+    <a href="/contact" purNav="/contact">Contact</a>
+</nav>
+
+<div id="content"></div>
 ```
 
-### 4. Membuat Komponen Kustom
+### 3. Styling Link Aktif
 
-```javascript
-// Membuat komponen kustom
-pur.createComponent('pur-header', `
-    <header>
-        <h1>My Website</h1>
-        <nav>
-            <a purNav="/">Home</a>
-            <a purNav="/about">About</a>
-        </nav>
-    </header>
-`, `
-    header {
-        background: #333;
-        color: white;
-        padding: 1rem;
-    }
-    nav a {
-        color: white;
-        margin-right: 1rem;
-        text-decoration: none;
-    }
-    nav a.pur-active {
-        font-weight: bold;
-        text-decoration: underline;
-    }
-`);
+Link yang aktif akan mendapatkan class `pur-active`:
 
-// Gunakan komponen di HTML
-// <pur-header></pur-header>
-```
-
-### 5. Event Handling
-
-```javascript
-// Dengarkan perubahan rute
-window.addEventListener('purRouteChange', (event) => {
-    console.log('Route changed to:', event.detail.route);
-});
+```css
+[purNav].pur-active {
+    font-weight: bold;
+    color: #007bff;
+}
 ```
 
 ## API Reference
 
-### pur.addRoute(path, handler)
-Menambahkan rute baru.
+### Methods
 
-### pur.navigate(url)
-Navigasi ke URL tertentu.
+#### `addRoute(path, handler)`
+Menambahkan route baru.
 
-### pur.setDefaultRoute(path)
-Mengatur rute default.
+```javascript
+pur.addRoute('/users', () => {
+    // Handler untuk route /users
+    console.log('Users page loaded');
+});
+```
 
-### pur.loadHTML(url, container, callback)
-Memuat konten HTML ke dalam container.
+#### `setDefaultRoute(path)`
+Mengatur route default.
 
-### pur.createComponent(name, template, style)
-Membuat komponen web kustom.
+```javascript
+pur.setDefaultRoute('/home');
+```
+
+#### `navigate(url)`
+Navigasi secara programmatic.
+
+```javascript
+pur.navigate('/about');
+```
+
+#### `loadHTML(url, container)`
+Memuat HTML dari URL eksternal.
+
+```javascript
+pur.loadHTML('/partials/header.html', document.getElementById('header'))
+    .then(() => console.log('HTML loaded'))
+    .catch(err => console.error('Failed to load HTML:', err));
+```
+
+#### `createComponent(name, templateString, styles)`
+Membuat custom component.
+
+```javascript
+pur.createComponent('my-header', 
+    '<header><h1>My App</h1><slot></slot></header>',
+    'h1 { color: blue; }'
+);
+```
+
+### Events
+
+#### `purRouteChange`
+Event yang di-trigger ketika route berubah.
+
+```javascript
+window.addEventListener('purRouteChange', (event) => {
+    console.log('Route changed to:', event.detail.route);
+    console.log('Full URL:', event.detail.url);
+});
+```
 
 ## Contoh Lengkap
 
+### HTML Structure
+
 ```html
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <title>My SPA</title>
-    <script src="https://cdn.jsdelivr.net/gh/purujawa06-bot/myCdn/purNav/pur.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Pur App</title>
     <style>
-        .nav-item {
-            display: inline-block;
-            padding: 10px;
-            margin: 5px;
-            background: #eee;
-            cursor: pointer;
-        }
-        .nav-item.pur-active {
-            background: #007bff;
-            color: white;
-        }
+        nav a { margin: 0 10px; text-decoration: none; }
+        nav a.pur-active { font-weight: bold; color: #007bff; }
+        #content { padding: 20px; border: 1px solid #ddd; margin-top: 20px; }
     </style>
 </head>
 <body>
-    <div class="nav-item" purNav="/">Home</div>
-    <div class="nav-item" purNav="/about">About</div>
-    <div class="nav-item" purNav="/contact">Contact</div>
-    
-    <div id="content"></div>
+    <nav>
+        <a href="/" purNav="/">Home</a>
+        <a href="/about" purNav="/about">About</a>
+        <a href="/contact" purNav="/contact">Contact</a>
+        <a href="/products" purNav="/products">Products</a>
+    </nav>
 
-    <script>
-        // Define routes
+    <div id="content">Loading...</div>
+
+    <script type="module">
+        import pur from 'https://cdn.jsdelivr.net/gh/purujawa06-bot/myCdn/purNav/pur.js';
+
+        // Setup routes
+        pur.setDefaultRoute('/');
+        
         pur.addRoute('/', () => {
-            document.getElementById('content').innerHTML = '<h1>Welcome Home</h1>';
+            document.getElementById('content').innerHTML = `
+                <h1>Welcome Home</h1>
+                <p>This is the home page content.</p>
+            `;
         });
-        
+
         pur.addRoute('/about', () => {
-            document.getElementById('content').innerHTML = '<h1>About Us</h1><p>We are a great company!</p>';
+            document.getElementById('content').innerHTML = `
+                <h1>About Us</h1>
+                <p>Learn more about our company.</p>
+            `;
         });
-        
+
         pur.addRoute('/contact', () => {
-            document.getElementById('content').innerHTML = '<h1>Contact Us</h1><p>Email: info@example.com</p>';
+            document.getElementById('content').innerHTML = `
+                <h1>Contact Us</h1>
+                <p>Get in touch with our team.</p>
+            `;
+        });
+
+        pur.addRoute('/products', () => {
+            // Load HTML dari file eksternal
+            pur.loadHTML('/partials/products.html', document.getElementById('content'))
+                .catch(() => {
+                    document.getElementById('content').innerHTML = '<p>Products page - content failed to load</p>';
+                });
+        });
+
+        // Listen untuk route changes
+        window.addEventListener('purRouteChange', (event) => {
+            console.log('Navigated to:', event.detail.route);
         });
     </script>
 </body>
 </html>
 ```
 
+### Contoh dengan Custom Components
+
+```javascript
+// Buat custom component
+pur.createComponent('app-header', 
+    `
+    <header>
+        <h1>My Application</h1>
+        <nav>
+            <a href="/" purNav="/">Home</a>
+            <a href="/settings" purNav="/settings">Settings</a>
+        </nav>
+    </header>
+    `,
+    `
+    header { 
+        background: #333; 
+        color: white; 
+        padding: 1rem; 
+    }
+    header h1 { margin: 0; }
+    header a { color: white; margin: 0 10px; }
+    header a.pur-active { color: yellow; }
+    `
+);
+
+// Gunakan component di HTML
+// <app-header></app-header>
+```
+
+## Query Parameters
+
+Pur mendukung query parameters. Handler bisa mengaksesnya melalui:
+
+```javascript
+pur.addRoute('/search', () => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const query = searchParams.get('q');
+    
+    document.getElementById('content').innerHTML = `
+        <h1>Search Results</h1>
+        <p>Searching for: ${query || 'nothing'}</p>
+    `;
+});
+
+// Navigasi ke: /search?q=javascript
+```
+
+## Error Handling
+
+```javascript
+// Handle route not found
+pur.setDefaultRoute('/404');
+
+pur.addRoute('/404', () => {
+    document.getElementById('content').innerHTML = `
+        <h1>404 - Page Not Found</h1>
+        <p>The page you're looking for doesn't exist.</p>
+    `;
+});
+```
+
 ## Browser Support
 
-pur.js mendukung semua browser modern yang mendukung:
+Pur bekerja di semua browser modern yang mendukung:
 - ES6 Classes
-- Fetch API
+- Map
 - Custom Elements
-- Shadow DOM (untuk komponen)
+- Shadow DOM
+- History API
 
-## Lisensi
+## License
 
 MIT License - bebas digunakan untuk proyek personal dan komersial.
+
+---
+
+Dibuat dengan ❤️ untuk pengembangan web yang sederhana dan efisien.
