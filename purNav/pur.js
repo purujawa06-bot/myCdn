@@ -1,201 +1,113 @@
-// pur.js - Modern HTML Enhancement & SPA Navigation Module
-// Version 1.0.0
-
 class Pur {
     constructor() {
-        this.routes = {};
-        this.currentRoute = null;
+        this.routes = new Map();
         this.defaultRoute = null;
-        this.init();
+        this.currentUrl = null;
+        
+        if (document.readyState === 'complete') {
+            this.init();
+        } else {
+            window.addEventListener('DOMContentLoaded', () => this.init());
+        }
     }
 
     init() {
-        // Process all purNav elements on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            this.processPurNavElements();
-            this.setupHistoryListener();
-            this.loadInitialRoute();
-        });
+        document.body.addEventListener('click', (e) => this.handleClick(e));
+        window.addEventListener('popstate', () => this.resolve());
+        this.resolve();
     }
 
-    // Process all purNav elements in the DOM
-    processPurNavElements() {
-        const navElements = document.querySelectorAll('[purNav]');
-        
-        navElements.forEach(element => {
-            const url = element.getAttribute('purNav');
-            
-            if (url) {
-                // Add click event listener
-                element.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.navigate(url);
-                });
-                
-                // Add visual indication that this is a purNav element
-                element.style.cursor = 'pointer';
-                if (!element.hasAttribute('tabindex')) {
-                    element.setAttribute('tabindex', '0');
-                }
-                
-                // Add keyboard support
-                element.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        this.navigate(url);
-                    }
-                });
-            }
-        });
+    handleClick(e) {
+        const target = e.composedPath().find(el => el.hasAttribute && el.hasAttribute('purNav'));
+        if (target) {
+            e.preventDefault();
+            const url = target.getAttribute('purNav');
+            this.navigate(url);
+        }
     }
 
-    // Add a new route
     addRoute(path, handler) {
-        this.routes[path] = handler;
-        
-        if (!this.defaultRoute) {
-            this.defaultRoute = path;
-        }
-        
-        return this; // Allow chaining
-    }
-
-    // Set default route
-    setDefaultRoute(path) {
-        if (this.routes[path]) {
-            this.defaultRoute = path;
-        }
+        this.routes.set(path, handler);
+        if (!this.defaultRoute) this.defaultRoute = path;
         return this;
     }
 
-    // Navigate to a URL
+    setDefaultRoute(path) {
+        this.defaultRoute = path;
+        return this;
+    }
+
     navigate(url) {
-        // Update browser history
+        if (this.currentUrl === url) return;
         window.history.pushState({}, '', url);
-        
-        // Load the route
-        this.loadRoute(url);
-        
-        // Update any active state indicators
-        this.updateActiveStates(url);
+        this.resolve();
     }
 
-    // Load a route
-    loadRoute(url) {
-        const path = this.extractPath(url);
-        const handler = this.routes[path];
-        
+    resolve() {
+        this.currentUrl = window.location.pathname + window.location.search;
+        const path = window.location.pathname;
+        const handler = this.routes.get(path) || (this.defaultRoute ? this.routes.get(this.defaultRoute) : null);
+
+        this.updateActiveState(path);
+
         if (handler) {
-            this.currentRoute = path;
             handler();
-        } else if (this.defaultRoute) {
-            this.currentRoute = this.defaultRoute;
-            this.routes[this.defaultRoute]();
+            window.dispatchEvent(new CustomEvent('purRouteChange', { detail: { route: path, url: this.currentUrl } }));
         }
-        
-        // Dispatch a custom event for route changes
-        window.dispatchEvent(new CustomEvent('purRouteChange', {
-            detail: { route: path, fullUrl: url }
-        }));
     }
 
-    // Extract path from URL
-    extractPath(url) {
-        const a = document.createElement('a');
-        a.href = url;
-        return a.pathname;
-    }
-
-    // Update active states for navigation elements
-    updateActiveStates(url) {
-        const path = this.extractPath(url);
-        const navElements = document.querySelectorAll('[purNav]');
-        
-        navElements.forEach(element => {
-            const elementUrl = element.getAttribute('purNav');
-            const elementPath = this.extractPath(elementUrl);
-            
-            if (elementPath === path) {
-                element.classList.add('pur-active');
-            } else {
-                element.classList.remove('pur-active');
-            }
-        });
-    }
-
-    // Handle browser history changes
-    setupHistoryListener() {
-        window.addEventListener('popstate', () => {
-            this.loadRoute(window.location.href);
-        });
-    }
-
-    // Load initial route
-    loadInitialRoute() {
-        const initialUrl = window.location.href;
-        this.loadRoute(initialUrl);
-    }
-
-    // Utility method to load HTML content
-    loadHTML(url, container, callback) {
-        fetch(url)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
+    updateActiveState(currentPath) {
+        const updateLinks = (root) => {
+            const links = root.querySelectorAll('[purNav]');
+            links.forEach(link => {
+                const linkUrl = link.getAttribute('purNav');
+                const linkPath = linkUrl.split('?')[0];
+                if (linkPath === currentPath) {
+                    link.classList.add('pur-active');
+                } else {
+                    link.classList.remove('pur-active');
                 }
-                return response.text();
+            });
+        };
+
+        updateLinks(document);
+        
+        document.querySelectorAll('*').forEach(el => {
+            if (el.shadowRoot) updateLinks(el.shadowRoot);
+        });
+    }
+
+    loadHTML(url, container) {
+        return fetch(url)
+            .then(res => {
+                if (!res.ok) throw new Error(res.statusText);
+                return res.text();
             })
             .then(html => {
-                if (container) {
-                    container.innerHTML = html;
-                    // Reprocess any purNav elements in the new content
-                    this.processPurNavElements();
-                }
-                if (callback) callback(html);
-            })
-            .catch(error => {
-                console.error('Error loading HTML:', error);
+                if (container) container.innerHTML = html;
+                return html;
             });
     }
 
-    // Utility method for creating components
-    createComponent(name, template, style = '') {
-        if (!customElements.get(name)) {
-            class PurComponent extends HTMLElement {
-                constructor() {
-                    super();
-                    
-                    // Create shadow DOM
-                    this.attachShadow({ mode: 'open' });
-                    
-                    // Add styles if provided
-                    if (style) {
-                        const styleElement = document.createElement('style');
-                        styleElement.textContent = style;
-                        this.shadowRoot.appendChild(styleElement);
-                    }
-                    
-                    // Add template
-                    this.shadowRoot.innerHTML += template;
-                }
-                
-                connectedCallback() {
-                    // Component is added to the DOM
-                }
+    createComponent(name, templateString, styles = '') {
+        if (customElements.get(name)) return;
+
+        class PurComponent extends HTMLElement {
+            constructor() {
+                super();
+                this.attachShadow({ mode: 'open' });
             }
-            
-            customElements.define(name, PurComponent);
+
+            connectedCallback() {
+                const styleEl = styles ? `<style>${styles}</style>` : '';
+                this.shadowRoot.innerHTML = `${styleEl}${templateString}`;
+            }
         }
+
+        customElements.define(name, PurComponent);
     }
 }
 
-// Initialize pur.js
 const pur = new Pur();
-
-// Make it available globally
 window.pur = pur;
-
-// Export for module systems
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = pur;
-}
+export default pur;
