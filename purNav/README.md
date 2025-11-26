@@ -137,7 +137,7 @@ Membuat komponen web kustom.
 <html>
 <head>
     <title>My SPA</title>
-    <script src="pur.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/purujawa06-bot/myCdn/purNav/pur.js"></script>
     <style>
         .nav-item {
             display: inline-block;
