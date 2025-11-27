@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Website Responsive dengan Pur.js">
+    <title>Pur.js Demo</title>
+    <style>
+        /* CSS Variables & Reset */
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --primary: #6366f1;
+            --card-bg: #f3f4f6;
+            --nav-bg: #ffffff;
+            --border: #e5e7eb;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #111827;
+            --text-color: #f9fafb;
+            --primary: #818cf8;
+            --card-bg: #1f2937;
+            --nav-bg: #111827;
+            --border: #374151;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+            padding-bottom: 50px;
+        }
+
+        /* Responsive Navbar */
+        nav {
+            position: sticky;
+            top: 0;
+            background: var(--nav-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        nav a {
+            margin-right: 15px;
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        nav a:hover { color: var(--primary); }
+
+        /* Layout Utilities */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .grid {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .tag {
+            background: var(--primary);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigasi Statis (Bisa juga dibuat dinamis dalam JS) -->
+    <nav>
+        <div class="logo"><strong>PUR.JS</strong></div>
+        <div>
+            <a href="/" data-link>Home</a>
+            <a href="/blog" data-link>Blog</a>
+            <a href="/about" data-link>About</a>
+            <button id="theme-btn" class="btn">Theme</button>
+        </div>
+    </nav>
+
+    <!-- Tempat Aplikasi di-render -->
+    <div id="app"></div>
+
+    <!-- Script Utama -->
+    <script type="module">
+        import { Pur } from './pur.js';
+
+        // --- Definisi Komponen ---
+
+        // 1. Home Component
+        const HomePage = {
+            meta: { title: 'Home - Pur.js', description: 'Halaman utama aplikasi modern' },
+            onMount: ({ state }) => {
+                console.log("Home Mounted");
+            },
+            actions: {
+                increment: ({ state }) => state.counter++,
+                reset: ({ state }) => state.counter = 0
+            },
+            render: ({ state, device, link }) => `
+                <div class="container">
+                    <h1>Selamat Datang di SPA Modern</h1>
+                    <p>Status Layar: <span class="tag">${device.isMobile ? 'Mobile' : 'Desktop'}</span></p>
+                    <p>Lebar: ${device.width}px</p>
+
+                    <div class="card">
+                        <h3>Contoh Global State Reactive</h3>
+                        <p>Counter ini akan tetap tersimpan saat pindah halaman:</p>
+                        <h2 style="font-size: 3rem; margin: 10px 0;">${state.counter}</h2>
+                        <button class="btn" data-action="increment">+ Tambah</button>
+                        <button class="btn" style="background: #ef4444;" data-action="reset">Reset</button>
+                    </div>
+
+                    <div class="grid" style="margin-top: 2rem;">
+                        <div class="card">
+                            <h4>Fast Rendering</h4>
+                            <p>Menggunakan Proxy API untuk update DOM selektif.</p>
+                        </div>
+                        <div class="card">
+                            <h4>Routing</h4>
+                            <p>Mendukung parameter dinamis seperti /blog/:id.</p>
+                        </div>
+                    </div>
+                </div>
+            `
+        };
+
+        // 2. Blog List Component (Simulasi Fetch Data)
+        const BlogPage = {
+            meta: { title: 'Blog - Pur.js', description: 'Daftar artikel terbaru' },
+            onMount: async ({ state }) => {
+                // Simulasi loading data jika belum ada
+                if (state.posts.length === 0) {
+                    state.loading = true;
+                    // Simulasi delay API
+                    await new Promise(r => setTimeout(r, 800)); 
+                    state.posts = [
+                        { id: 1, title: "Cara Membuat SPA", excerpt: "Panduan lengkap..." },
+                        { id: 2, title: "Apa itu SSR?", excerpt: "Penjelasan mendalam..." },
+                        { id: 3, title: "Javascript Modern", excerpt: "Fitur ES6+..." }
+                    ];
+                    state.loading = false;
+                }
+            },
+            render: ({ state, link }) => `
+                <div class="container">
+                    <h1>Blog Terbaru</h1>
+                    ${state.loading ? `<p>Loading articles...</p>` : ''}
+                    
+                    <div class="grid">
+                        ${state.posts.map(post => `
+                            <div class="card">
+                                <h3>${post.title}</h3>
+                                <p>${post.excerpt}</p>
+                                <a ${link(`/blog/${post.id}`)} class="btn">Baca Selengkapnya</a>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `
+        };
+
+        // 3. Blog Detail Component (Dynamic Route)
+        const BlogPost = {
+            meta: { title: 'Membaca Artikel...', description: 'Detail artikel' },
+            onMount: ({ params, state }) => {
+                // Cari data berdasarkan ID parameter URL
+                const post = state.posts.find(p => p.id == params.id);
+                // Update title browser secara dinamis setelah data didapat
+                if(post) document.title = `${post.title} | Pur.js`;
+            },
+            render: ({ params, state, link }) => {
+                const post = state.posts.find(p => p.id == params.id);
+                
+                if (!post && !state.loading) return `
+                    <div class="container">
+                        <h2>Artikel tidak ditemukan</h2>
+                        <a ${link('/blog')}>Kembali</a>
+                    </div>`;
+
+                return `
+                <div class="container">
+                    <a ${link('/blog')}>&larr; Kembali</a>
+                    <div class="card" style="margin-top: 20px;">
+                        <h1>${post ? post.title : 'Loading...'}</h1>
+                        <p style="color: gray;">Post ID: ${params.id}</p>
+                        <hr style="border:0; border-top:1px solid var(--border); margin: 20px 0;">
+                        <p>Ini adalah konten detail untuk artikel ini. Konten ini dirender berdasarkan URL parameter <strong>/blog/${params.id}</strong>.</p>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                    </div>
+                </div>
+                `;
+            }
+        };
+
+        // --- Inisialisasi App ---
+
+        const app = new Pur({
+            root: '#app',
+            // Global State Store
+            store: {
+                counter: 0,
+                posts: [],
+                loading: false,
+                user: null
+            },
+            // Definisi Routes
+            routes: {
+                '/': HomePage,
+                '/about': {
+                    meta: { title: 'About' },
+                    render: () => `<div class="container"><h1>About Us</h1><p>Dibuat dengan Pur.js</p></div>`
+                },
+                '/blog': BlogPage,
+                '/blog/:id': BlogPost, // Dynamic Route
+            }
+        });
+
+        // Event listener manual untuk tombol di luar App Container (Navbar)
+        document.getElementById('theme-btn').addEventListener('click', () => {
+            app.toggleTheme();
+        });
+
+    </script>
+</body>
+</html>
